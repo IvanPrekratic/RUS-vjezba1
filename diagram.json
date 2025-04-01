@@ -1,0 +1,49 @@
+{
+    "version": 1,
+    "author": "Anonymous maker",
+    "editor": "wokwi",
+    "parts": [
+      { "type": "wokwi-arduino-uno", "id": "uno", "top": 0, "left": 0, "attrs": {} },
+      {
+        "type": "wokwi-pushbutton",
+        "id": "btn1",
+        "top": -118.6,
+        "left": 268.8,
+        "attrs": { "color": "green", "xray": "1" }
+      },
+      {
+        "type": "wokwi-led",
+        "id": "led1",
+        "top": -195.6,
+        "left": 90.2,
+        "attrs": { "color": "red" }
+      },
+      {
+        "type": "wokwi-led",
+        "id": "led2",
+        "top": -195.6,
+        "left": 157.4,
+        "attrs": { "color": "blue" }
+      },
+      {
+        "type": "wokwi-ntc-temperature-sensor",
+        "id": "ntc1",
+        "top": 31,
+        "left": 316.8,
+        "rotate": 180,
+        "attrs": {}
+      }
+    ],
+    "connections": [
+      [ "btn1:1.l", "uno:GND.1", "green", [ "h0" ] ],
+      [ "btn1:2.l", "uno:2", "green", [ "h0" ] ],
+      [ "uno:GND.1", "led1:C", "black", [ "v-37.8", "h-29.1", "v-124.8" ] ],
+      [ "led1:A", "uno:8", "black", [ "h19.2", "v124.8", "h38.6" ] ],
+      [ "led2:C", "uno:GND.1", "cyan", [ "v28.8", "h-57.2", "v133.8" ] ],
+      [ "led2:A", "uno:9", "cyan", [ "v86.4", "h-19.4" ] ],
+      [ "ntc1:GND", "uno:GND.3", "black", [ "v172.4", "h-133.8", "v-58.1" ] ],
+      [ "uno:5V", "ntc1:VCC", "red", [ "v38.9", "h147.2", "v-162.8" ] ],
+      [ "ntc1:OUT", "uno:A0", "green", [ "h-18.6", "v153.3", "h-89.6" ] ]
+    ],
+    "dependencies": {}
+  }
