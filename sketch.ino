@@ -1,54 +1,106 @@
 #include <TimerOne.h>
 
-#define BUTTON_PIN 2      // Gumb na digitalnom pinu 2 (INT0)
-#define LED_RED 8         // LED dioda za vanjski prekid
-#define LED_BLUE 9        // LED dioda za timer prekid
-#define TEMP_SENSOR A0    // LM35 senzor na analognom pinu A0
+#define BUTTON_HIGH 2    // Tipka - visoki prioritet (INT0)
+#define BUTTON_MED 3     // Tipka - srednji prioritet (INT1)
+#define BUTTON_LOW 4     // Tipka - niski prioritet
+#define LED_HIGH 8       // LED za tipku visokog prioriteta
+#define LED_MED 9        // LED za tipku srednjeg prioriteta
+#define LED_LOW 10       // LED za tipku niskog prioriteta
+#define LED_DIST 11      // LED indikator za udaljenost
 
-volatile bool buttonPressed = false;  // Flag za gumb prekid
-volatile bool timerEvent = false;     // Flag za timer prekid
-volatile float temperature = 0;         // Globalna varijabla za temperaturu
+#define TRIG_PIN 5       // HC-SR04 Trigger pin
+#define ECHO_PIN 6       // HC-SR04 Echo pin
 
-void buttonISR() {
-    buttonPressed = true;  // Postavi flag za gumb prekid
+volatile bool buttonHighPressed = false;
+volatile bool buttonMedPressed = false;
+volatile bool timerEvent = false;
+
+long duration;
+float distance;
+
+void buttonHighISR() {
+    buttonHighPressed = true;
+}
+
+void buttonMedISR() {
+    buttonMedPressed = true;
 }
 
 void timerISR() {
-    timerEvent = true;  // Postavi flag za timer prekid
+    timerEvent = true;
 }
 
 void setup() {
     Serial.begin(9600);
     
-    pinMode(BUTTON_PIN, INPUT_PULLUP);  
-    pinMode(LED_RED, OUTPUT);
-    pinMode(LED_BLUE, OUTPUT);
+    pinMode(BUTTON_HIGH, INPUT_PULLUP);
+    pinMode(BUTTON_MED, INPUT_PULLUP);
+    pinMode(BUTTON_LOW, INPUT_PULLUP);
     
-    attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), buttonISR, FALLING);  // Vanjski prekid
-
-    Timer1.initialize(500000);  // Timer prekid svakih 500ms
+    pinMode(LED_HIGH, OUTPUT);
+    pinMode(LED_MED, OUTPUT);
+    pinMode(LED_LOW, OUTPUT);
+    pinMode(LED_DIST, OUTPUT);
+    
+    pinMode(TRIG_PIN, OUTPUT);
+    pinMode(ECHO_PIN, INPUT);
+    
+    attachInterrupt(digitalPinToInterrupt(BUTTON_HIGH), buttonHighISR, FALLING);
+    attachInterrupt(digitalPinToInterrupt(BUTTON_MED), buttonMedISR, FALLING);
+    
+    Timer1.initialize(1000000); // 1 sekunda
     Timer1.attachInterrupt(timerISR);
 }
 
 void loop() {
-    if (buttonPressed) {
-        buttonPressed = false;  // Reset flag
-        digitalWrite(LED_RED, HIGH);
-        Serial.println("Gumb pritisnut! Visoki prioritet prekida!");
-        delay(1500);
-        digitalWrite(LED_RED, LOW);
+    // Visoki prioritet (prekid)
+    if (buttonHighPressed) {
+        buttonHighPressed = false;
+        digitalWrite(LED_HIGH, HIGH);
+        Serial.println("Visoki prioritet prekida!");
+        delay(500);
+        digitalWrite(LED_HIGH, LOW);
     }
 
-    if (timerEvent) {
-        timerEvent = false;  // Reset flag
-        const float BETA = 3950;
-        int analogValue = analogRead(TEMP_SENSOR);
-        temperature = 1 / (log(1 / (1023. / analogValue - 1)) / BETA + 1.0 / 298.15) - 273.15; // Očitaj temperaturu
-        digitalWrite(LED_BLUE, HIGH);
-        Serial.print("Temperatura: ");
-        Serial.print(temperature);
-        Serial.println(" °C");
-        delay(1500);
-        digitalWrite(LED_BLUE, LOW);
+    // Srednji prioritet (prekid)
+    if (buttonMedPressed) {
+        buttonMedPressed = false;
+        digitalWrite(LED_MED, HIGH);
+        Serial.println("Srednji prioritet prekida!");
+        delay(500);
+        digitalWrite(LED_MED, LOW);
     }
+
+    // Niski prioritet (polling)
+    if (digitalRead(BUTTON_LOW) == LOW) {  // Ručno provjeravamo stanje tipke
+        digitalWrite(LED_LOW, HIGH);
+        Serial.println("Niski prioritet prekida!");
+        delay(500);
+        digitalWrite(LED_LOW, LOW);
+    }
+
+    // Timer prekid svakih 1 sekundu
+    if (timerEvent) {
+        timerEvent = false;
+        measureDistance();
+        Serial.print("Udaljenost: ");
+        Serial.print(distance);
+        Serial.println(" cm");
+        if (distance < 10) {
+            digitalWrite(LED_DIST, HIGH);
+        } else {
+            digitalWrite(LED_DIST, LOW);
+        }
+    }
+}
+
+void measureDistance() {
+    digitalWrite(TRIG_PIN, LOW);
+    delayMicroseconds(2);
+    digitalWrite(TRIG_PIN, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(TRIG_PIN, LOW);
+    
+    duration = pulseIn(ECHO_PIN, HIGH);
+    distance = duration * 0.034 / 2;
 }
