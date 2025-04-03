@@ -1,7 +1,7 @@
 # RUS-vjezba1
 Rješenje zadanog zadatka za vježbu 1 iz kolegija Razvoj ugradbenih sustava <br>
-Link na Wokwi projekt: https://wokwi.com/projects/426955490900012033
-!![alt text](image.png)
+Link na Wokwi projekt: https://wokwi.com/projects/426955490900012033<br>
+![alt text](image.png)
 
 # Opis zadatka
 Ovaj projekt demonstrira korištenje prekida na mikrokontroleru koristeći Arduino Uno. Implementirani su različiti prekidi za obradu signala s tipkala, tajmera i senzora udaljenosti (HC-SR04). 
